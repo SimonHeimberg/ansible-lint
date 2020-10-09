@@ -228,6 +228,8 @@ def _get_matches(rules: RulesCollection, options: "Namespace") -> list:
     if not options.playbook:
         # no args triggers auto-detection mode
         playbooks = get_playbooks_and_roles(options=options)
+    elif options.filter_for_playbooks:
+        playbooks = get_playbooks_and_roles(options=options, files=playbooks)
     else:
         playbooks = sorted(set(options.playbook))
 

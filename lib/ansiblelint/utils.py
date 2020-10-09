@@ -734,12 +734,17 @@ def get_yaml_files(options: Namespace) -> dict:
 
 # FIXME: drop noqa once this function is made simpler
 # Ref: https://github.com/ansible/ansible-lint/issues/744
-def get_playbooks_and_roles(options=None) -> List[str]:  # noqa: C901
+def get_playbooks_and_roles(options=None, files=None) -> List[str]:  # noqa: C901
     """Find roles and playbooks."""
     if options is None:
         options = {}
 
-    files = get_yaml_files(options)
+    if files is None:
+        files = get_yaml_files(options)
+        find_harder = false
+    else:
+        files = OrderedDict.fromkeys(sorted(files))
+        find_harder = true # because not all files of the repo are passed
 
     playbooks = []
     role_dirs = []
@@ -781,6 +786,10 @@ def get_playbooks_and_roles(options=None) -> List[str]:  # noqa: C901
                 role_dirs.append(str(p.parents[1]))
                 continue
             elif role_internals.intersection(p.parts):
+                if find_harder:
+                    matching = role_internals.intersection(p.parts)
+                    idx = min(p.parts.index(el) for el in matching)
+                    role_dirs.append(str(Path(*p.parts[:idx]) # parent of found role_internal
                 continue
             elif 'tests' in p.parts:
                 playbooks.append(normpath(p))
